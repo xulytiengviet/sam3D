@@ -334,15 +334,17 @@ $("reconstruct").addEventListener("click",async()=>{
     const url=new URL(endpoint);
     if(url.protocol!=="https:" && !(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))throw new Error("API cần HTTPS (hoặc localhost).");
     if(!state.maskFile && !state.sourceData.startsWith("data:image/png"))throw new Error("Hãy cung cấp mask PNG cho ảnh JPG/WEBP để khoanh vùng vật thể.");
+    const check=await fetch(endpoint+"/api/status");
+    if(!check.ok)throw new Error("Render gateway chưa sẵn sàng.");
+    const system=await check.json();
+    if(!system.ready)throw new Error("Render đã kết nối nhưng GPU SAM 3D chưa sẵn sàng. Vui lòng kết nối máy chủ GPU trong Render.");
     busy(true,"GPU SAM 3D ĐANG SUY LUẬN...");
     const form=new FormData();
     const originalBlob=await (await fetch(state.objectURL)).blob();
     form.append("image",originalBlob,"source"+imageExt(originalBlob));
     if(state.maskFile)form.append("mask",state.maskFile,"mask.png");
     form.append("seed","42");
-    const headers={};
-    if($("apiKey").value)headers["Authorization"]="Bearer "+$("apiKey").value;
-    const response=await fetch(endpoint+"/api/reconstruct",{method:"POST",headers,body:form});
+    const response=await fetch(endpoint+"/api/reconstruct",{method:"POST",body:form});
     if(!response.ok){
       const err=await response.json().catch(()=>({detail:"HTTP "+response.status}));
       throw new Error(typeof err.detail==="string"?err.detail:"Máy chủ GPU trả về HTTP "+response.status);
@@ -367,5 +369,17 @@ $("reconstruct").addEventListener("click",async()=>{
     $("metaOutput").textContent="PLY DOWNLOADED";
     message("SAM 3D đã trả về PLY. Đã tải tệp splat; màn hình chỉ xem point cloud, không phải trình render Gaussian Splat đầy đủ.");
   }catch(err){handleError(err);}finally{busy(false);}
+});
+$("checkBackend").addEventListener("click",async()=>{
+  const endpoint=$("apiURL").value.trim().replace(/\/+$/,"");
+  const output=$("backendStatus");
+  output.textContent="Đang kiểm tra Render / GPU...";
+  try {
+    const response=await fetch(endpoint+"/api/status",{cache:"no-store"});
+    if(!response.ok)throw new Error("Render trả về HTTP "+response.status);
+    const s=await response.json();
+    output.textContent=s.ready?"✓ Render + GPU SAM 3D sẵn sàng":s.gateway_online?("✓ Render online · "+(!s.gpu_configured?"Chưa có GPU upstream":!s.gpu_reachable?"GPU chưa phản hồi":"Chưa bật suy luận công khai")):"Render chưa sẵn sàng";
+    message(output.textContent,!s.ready);
+  } catch(err){ output.textContent="Không kết nối được Render: "+err.message;handleError(err); }
 });
 buildDemoBlob().then(blob=>loadSource(blob,"silver-demo.png")).catch(handleError);

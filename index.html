@@ -48,9 +48,9 @@
       </section>
       <details class="panel api-panel">
         <summary><b>04</b> KẾT NỐI SAM 3D AI <span>GPU BACKEND ↘</span></summary>
-        <p>Để tái dựng hình học vật thể bằng mô hình SAM 3D gốc, kết nối API GPU riêng và cung cấp mask phân đoạn.</p>
-        <label class="text-label" for="apiURL">API ENDPOINT</label><input id="apiURL" class="text-input" type="url" placeholder="https://your-gpu-server.example">
-        <label class="text-label" for="apiKey">API KEY (không lưu)</label><input id="apiKey" class="text-input" type="password" autocomplete="off" placeholder="Khóa máy chủ">
+        <p>Render đã được kết nối như cổng API HTTPS. Muốn tái dựng vật thể bằng SAM 3D thật, cần kết nối GPU ngoài và mask phân đoạn.</p>
+        <label class="text-label" for="apiURL">RENDER API GATEWAY</label><input id="apiURL" class="text-input" type="url" value="https://sam3d-gateway.onrender.com" placeholder="https://sam3d-gateway.onrender.com"><button id="checkBackend" class="action" type="button" style="width:100%;margin-top:10px">◎ Kiểm tra kết nối Render / GPU</button><p id="backendStatus" class="mini" role="status" aria-live="polite">Render đã cấu hình · Chưa kiểm tra GPU</p>
+        <p class="mini">Render chuyển tiếp tới GPU qua khóa bí mật phía máy chủ; không nhập API key GPU trong trình duyệt.</p>
         <label class="file-small" for="maskInput">+ Chọn mask vật thể <span>PNG / bắt buộc nếu ảnh không có alpha</span></label><input id="maskInput" type="file" accept="image/png" hidden>
         <button id="reconstruct" class="action primary" type="button">✦ Tái dựng bằng SAM 3D</button>
         <p id="maskName" class="mini">Chưa chọn mask. Ảnh PNG trong suốt có thể dùng kênh alpha.</p>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="SAM3D Studio — dựng ảnh thành mô hình chiều sâu 3D, xem trước và xuất HTML/CSS/JS.">
+  <title>SAM3D Studio | Image → 3D → Code</title>
+  <link rel="stylesheet" href="./web/style.css">
+  <script type="importmap">
+  {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}
+  </script>
+  <script type="module" src="./web/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="SAM3D Studio"><span class="brand-mark">S<span>3</span></span><span><strong>SAM3D</strong><small>STUDIO / IMAGE TO SPACE</small></span></a>
+    <div class="nav-right"><span class="online"><i></i> WEBGL STUDIO</span><a class="navlink" href="https://github.com/xulytiengviet/sam3D" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Bảng điều khiển">
+      <div class="heading"><div class="eyebrow"><span class="slash">/</span> CREATIVE WORKSPACE <span class="edition">V 1.0</span></div><h1>Ảnh thành <em>3D.</em><br>Ý tưởng thành <em>Code.</em></h1><p>Tải ảnh hoặc dán URL. Trải nghiệm chiều sâu tương tác và xuất dự án web ngay trong trình duyệt.</p></div>
+      <section class="panel">
+        <div class="panel-title"><span><b>01</b> NGUỒN HÌNH ẢNH</span><span class="line"></span></div>
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Chọn ảnh từ máy tính">
+          <div class="drop-icon">↥</div><strong>Thả ảnh vào đây</strong><span>hoặc nhấn để chọn từ thiết bị</span><small>PNG · JPG · WEBP / tối đa 20 MB</small>
+        </div>
+        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+        <div class="between"><span>HOẶC TỪ URL</span><span>HTTPS / CORS</span></div>
+        <form id="urlForm" class="urlrow"><input id="imageURL" type="url" placeholder="https://example.com/image.jpg" aria-label="URL hình ảnh" required><button type="submit" title="Tải hình ảnh từ URL" aria-label="Tải ảnh từ URL">↗</button></form>
+      </section>
+      <section class="panel">
+        <div class="panel-title"><span><b>02</b> CHẾ ĐỘ HIỂN THỊ</span><span class="line"></span></div>
+        <div class="switcher" role="group" aria-label="Chế độ xem"><button class="active" data-mode="original" type="button">Ảnh gốc</button><button data-mode="depth" type="button">3D chiều sâu</button><button data-mode="wire" type="button">Khung lưới</button></div>
+        <div class="range-head"><label for="strength">ĐỘ NỔI KHỐI</label><output id="strengthValue">0.65</output></div>
+        <input class="range" id="strength" type="range" min="0" max="2" step="0.05" value="0.65">
+        <div class="range-head"><label for="resolution">MẬT ĐỘ LƯỚI</label><output id="resolutionValue">128</output></div>
+        <input class="range" id="resolution" type="range" min="48" max="192" step="16" value="128">
+        <label class="file-small" for="depthInput">+ Tải bản đồ độ sâu (depth map) <span>PNG / tùy chọn</span></label>
+        <input id="depthInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+        <div class="checkrow"><label><input id="autoRotate" type="checkbox"> Xoay tự động</label><button id="resetBtn" type="button" class="quiet">↺ Đặt lại góc nhìn</button></div>
+      </section>
+      <section class="panel">
+        <div class="panel-title"><span><b>03</b> XUẤT MÃ NGUỒN</span><span class="line"></span></div>
+        <button id="exportZip" class="action primary" type="button">↓ Tải HTML + CSS + JS (.zip)</button>
+        <div class="actionrow"><button id="exportHTML" class="action" type="button">HTML độc lập ↗</button><button id="exportGLB" class="action" type="button">Xuất GLB ↗</button></div>
+        <p class="mini">Mã xuất giữ ảnh làm texture. GLB là mặt lưới chiều sâu (2.5D), không phải vật thể 3D kín.</p>
+      </section>
+      <details class="panel api-panel">
+        <summary><b>04</b> KẾT NỐI SAM 3D AI <span>GPU BACKEND ↘</span></summary>
+        <p>Để tái dựng hình học vật thể bằng mô hình SAM 3D gốc, kết nối API GPU riêng và cung cấp mask phân đoạn.</p>
+        <label class="text-label" for="apiURL">API ENDPOINT</label><input id="apiURL" class="text-input" type="url" placeholder="https://your-gpu-server.example">
+        <label class="text-label" for="apiKey">API KEY (không lưu)</label><input id="apiKey" class="text-input" type="password" autocomplete="off" placeholder="Khóa máy chủ">
+        <label class="file-small" for="maskInput">+ Chọn mask vật thể <span>PNG / bắt buộc nếu ảnh không có alpha</span></label><input id="maskInput" type="file" accept="image/png" hidden>
+        <button id="reconstruct" class="action primary" type="button">✦ Tái dựng bằng SAM 3D</button>
+        <p id="maskName" class="mini">Chưa chọn mask. Ảnh PNG trong suốt có thể dùng kênh alpha.</p>
+      </details>
+      <footer class="foot">LONG NGO · SAM3D STUDIO<br><span>Web UI độc lập · SAM 3D Objects theo giấy phép SAM gốc</span></footer>
+    </aside>
+    <main class="workarea">
+      <div class="stage-top"><div><span class="eyebrow">/ LIVE WORKSPACE</span><h2>Không gian trực quan <span class="decor">◌</span></h2></div><div class="stage-right"><span class="tag" id="modeTag">ORIGINAL / 2D</span><button id="snapshot" type="button" class="top-button">▧ Lưu ảnh PNG</button></div></div>
+      <section class="viewer" id="viewer" aria-label="Vùng xem trước 3D">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div id="canvasHost"></div><img id="originalPhoto" alt="Ảnh gốc đang xem trước">
+        <div class="stage-stamp"><span>◈</span> SAM3D RENDER ENGINE <b id="stampMode">IMAGE MODE</b></div>
+        <div class="stage-bottom"><span><i></i> <span id="status">SẴN SÀNG</span></span><span>GIỮ CHUỘT ĐỂ XOAY · CUỘN ĐỂ ZOOM</span></div>
+        <div id="working" class="working" hidden><div class="spinner"></div><span>ĐANG XỬ LÝ...</span></div>
+      </section>
+      <div class="bottom-grid"><div><span class="metric-label">NGUỒN</span><strong id="metaFile">DEMO SCENE</strong></div><div><span class="metric-label">KÍCH THƯỚC ẢNH</span><strong id="metaSize">—</strong></div><div><span class="metric-label">ENGINE</span><strong id="metaEngine">PIXEL PERFECT</strong></div><div><span class="metric-label">KẾT QUẢ</span><strong id="metaOutput">READY FOR EXPORT</strong></div></div>
+      <div id="notice" class="notice" role="status" aria-live="polite">Chế độ ảnh gốc giữ nguyên bề mặt ảnh. Chế độ 3D nhanh sử dụng độ sâu ước lượng; cần GPU backend để chạy SAM 3D Objects thật.</div>
+    </main>
+  </div>
+</body>
+</html>
